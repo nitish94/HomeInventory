@@ -33,16 +33,12 @@ func InitDB(filepath string) (*DB, error) {
 }
 
 func (db *DB) Migrate() error {
-	// Drop tables if they exist to ensure clean schema
-	_, _ = db.Exec(`DROP TABLE IF EXISTS items`)
-	_, _ = db.Exec(`DROP TABLE IF EXISTS locations`)
-
 	query := `
-	CREATE TABLE locations (
+	CREATE TABLE IF NOT EXISTS locations (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL UNIQUE
 	);
-	CREATE TABLE items (
+	CREATE TABLE IF NOT EXISTS items (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
 		count INTEGER NOT NULL DEFAULT 0,

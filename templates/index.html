@@ -1,41 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .btn-custom { border-radius: 25px; padding: 8px 20px; }
+        .location-card { background: rgba(255,255,255,0.95); }
+        .search-container { margin-bottom: 30px; }
+        .item-list { background: #f8f9fa; border-radius: 10px; padding: 15px; }
+    </style>
 </head>
 <body>
-    <h1>Home Inventory</h1>
-    <form action="/" method="get">
-        <input type="text" name="search" placeholder="Search items..." value="{{.SearchQuery}}">
-        <button type="submit">Search</button>
-        {{if .IsSearch}}<a href="/">Clear Search</a>{{end}}
-    </form>
-    <br>
-    <a href="/add-location">Add Location</a> | <a href="/export.toml">Export as TOML</a>
-    <br><br>
-    {{if .IsSearch}}
-    <h2>Search Results for "{{.SearchQuery}}"</h2>
-    {{if .SearchResults}}
-    <ul>
-    {{range .SearchResults}}
-        <li>{{.Item.Name}} ({{.Item.Count}}) - <strong>{{.Location.Name}}</strong> <a href="/increase-item/{{.Item.ID}}">+</a> <a href="/decrease-item/{{.Item.ID}}">-</a> <a href="/edit-item/{{.Item.ID}}">Edit</a> <a href="/delete-item/{{.Item.ID}}">Delete</a></li>
-    {{end}}
-    </ul>
-    {{else}}
-    <p>No items found matching "{{.SearchQuery}}".</p>
-    {{end}}
-    {{else}}
-    {{range .LocationsWithItems}}
-    <div>
-        <h2>{{.Location.Name}} <a href="/edit-location/{{.Location.ID}}">Edit</a> <a href="/delete-location/{{.Location.ID}}">Delete</a> <a href="/location-history/{{.Location.ID}}">History</a></h2>
-        <ul>
-        {{range .Items}}
-            <li>{{.Name}} ({{.Count}}) <a href="/increase-item/{{.ID}}">+</a> <a href="/decrease-item/{{.ID}}">-</a> <a href="/edit-item/{{.ID}}">Edit</a> <a href="/delete-item/{{.ID}}">Delete</a></li>
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1 class="display-4 text-white"><i class="fas fa-home"></i> Home Inventory</h1>
+            <p class="lead text-white-50">Manage your household items efficiently</p>
+        </div>
+
+        <div class="card search-container">
+            <div class="card-body">
+                <form action="/" method="get" class="d-flex gap-2">
+                    <input type="text" name="search" class="form-control form-control-lg" placeholder="🔍 Search items across all locations..." value="{{.SearchQuery}}">
+                    <button type="submit" class="btn btn-primary btn-lg btn-custom"><i class="fas fa-search"></i> Search</button>
+                    {{if .IsSearch}}<a href="/" class="btn btn-outline-secondary btn-lg btn-custom"><i class="fas fa-times"></i> Clear</a>{{end}}
+                </form>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="/add-location" class="btn btn-success btn-custom"><i class="fas fa-plus"></i> Add Location</a>
+            <a href="/export.toml" class="btn btn-info btn-custom"><i class="fas fa-download"></i> Export as TOML</a>
+        </div>
+
+        {{if .IsSearch}}
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-search"></i> Search Results for "{{.SearchQuery}}"</h3>
+            </div>
+            <div class="card-body">
+                {{if .SearchResults}}
+                <div class="row">
+                {{range .SearchResults}}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">{{.Item.Name}}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">{{.Location.Name}}</h6>
+                                <div class="badge bg-primary fs-5 mb-3">Count: {{.Item.Count}}</div>
+                                <div class="btn-group" role="group">
+                                    <a href="/increase-item/{{.Item.ID}}" class="btn btn-outline-success btn-sm"><i class="fas fa-plus"></i></a>
+                                    <a href="/decrease-item/{{.Item.ID}}" class="btn btn-outline-warning btn-sm"><i class="fas fa-minus"></i></a>
+                                    <a href="/edit-item/{{.Item.ID}}" class="btn btn-outline-primary btn-sm"><i class="fas fa-edit"></i></a>
+                                    <a href="/delete-item/{{.Item.ID}}" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {{end}}
+                </div>
+                {{else}}
+                <div class="alert alert-warning text-center">
+                    <i class="fas fa-exclamation-triangle"></i> No items found matching "{{.SearchQuery}}".
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{else}}
+        {{range .LocationsWithItems}}
+        <div class="card location-card mb-4">
+            <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                <h3 class="mb-0"><i class="fas fa-map-marker-alt"></i> {{.Location.Name}}</h3>
+                <div class="btn-group" role="group">
+                    <a href="/edit-location/{{.Location.ID}}" class="btn btn-light btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                    <a href="/delete-location/{{.Location.ID}}" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Delete</a>
+                    <a href="/location-history/{{.Location.ID}}" class="btn btn-info btn-sm"><i class="fas fa-history"></i> History</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {{if .Items}}
+                <div class="row">
+                {{range .Items}}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">{{.Name}}</h5>
+                                <div class="badge bg-secondary fs-5 mb-3">Count: {{.Count}}</div>
+                                <div class="btn-group" role="group">
+                                    <a href="/increase-item/{{.ID}}" class="btn btn-outline-success btn-sm"><i class="fas fa-plus"></i></a>
+                                    <a href="/decrease-item/{{.ID}}" class="btn btn-outline-warning btn-sm"><i class="fas fa-minus"></i></a>
+                                    <a href="/edit-item/{{.ID}}" class="btn btn-outline-primary btn-sm"><i class="fas fa-edit"></i></a>
+                                    <a href="/delete-item/{{.ID}}" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {{end}}
+                </div>
+                {{else}}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle"></i> No items in this location yet.
+                </div>
+                {{end}}
+                <div class="text-center mt-3">
+                    <a href="/add-item/{{.Location.ID}}" class="btn btn-primary btn-custom"><i class="fas fa-plus"></i> Add Item to {{.Location.Name}}</a>
+                </div>
+            </div>
+        </div>
         {{end}}
-        </ul>
-        <a href="/add-item/{{.Location.ID}}">Add Item to {{.Location.Name}}</a>
+        {{end}}
     </div>
-    {{end}}
-    {{end}}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

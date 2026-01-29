@@ -23,12 +23,14 @@ type PageData struct {
 }
 
 func main() {
+	dbExists := true
 	if _, err := os.Stat("inventory.db"); os.IsNotExist(err) {
 		file, err := os.Create("inventory.db")
 		if err != nil {
 			log.Fatal(err)
 		}
 		file.Close()
+		dbExists = false
 	}
 
 	var err error
@@ -42,18 +44,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Insert mock data if no locations exist
-	locations, err := database.GetLocations()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if len(locations) == 0 {
-		// Add mock location and item
+	// Insert mock data only if database was just created
+	if !dbExists {
 		err = database.AddLocation("Kitchen")
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = database.AddItem("Apples", 5, 1) // Assuming location ID 1
+		err = database.AddItem("Apples", 5, 1)
 		if err != nil {
 			log.Fatal(err)
 		}
