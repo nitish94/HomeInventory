@@ -46,6 +46,14 @@ func (db *DB) Migrate() error {
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		deleted_at DATETIME NULL,
 		FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE CASCADE
+	);
+	CREATE TABLE IF NOT EXISTS item_history (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		item_id INTEGER,
+		action TEXT NOT NULL,
+		quantity INTEGER NOT NULL,
+		timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (item_id) REFERENCES items(id)
 	);`
 	_, err := db.Exec(query)
 	return err
@@ -148,10 +156,21 @@ func (db *DB) AddItem(name string, count int, locationID int) error {
 	if err == nil {
 		// Exists, update count
 		_, err = db.Exec("UPDATE items SET count = ? WHERE id = ?", existingCount+count, existingID)
+		if err != nil {
+			return err
+		}
+		// Insert history
+		_, err = db.Exec("INSERT INTO item_history (item_id, action, quantity) VALUES (?, 'add', ?)", existingID, count)
 		return err
 	} else if err == sql.ErrNoRows {
 		// Not exists, insert new
-		_, err = db.Exec("INSERT INTO items (name, count, location_id) VALUES (?, ?, ?)", name, count, locationID)
+		result, err := db.Exec("INSERT INTO items (name, count, location_id) VALUES (?, ?, ?)", name, count, locationID)
+		if err != nil {
+			return err
+		}
+		newID, _ := result.LastInsertId()
+		// Insert history
+		_, err = db.Exec("INSERT INTO item_history (item_id, action, quantity) VALUES (?, 'add', ?)", int(newID), count)
 		return err
 	} else {
 		return err
@@ -164,7 +183,19 @@ func (db *DB) UpdateItem(id int, name string, count int) error {
 }
 
 func (db *DB) DeleteItem(id int) error {
-	_, err := db.Exec("UPDATE items SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?", id)
+	// Get current count before deleting
+	var currentCount int
+	err := db.QueryRow("SELECT count FROM items WHERE id = ?", id).Scan(&currentCount)
+	if err != nil {
+		return err
+	}
+	// Insert history
+	_, err = db.Exec("INSERT INTO item_history (item_id, action, quantity) VALUES (?, 'remove', ?)", id, currentCount)
+	if err != nil {
+		return err
+	}
+	// Soft delete
+	_, err = db.Exec("UPDATE items SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?", id)
 	return err
 }
 
@@ -187,6 +218,15 @@ type LocationWithItems struct {
 type ItemWithLocation struct {
 	Item     Item     `json:"item"`
 	Location Location `json:"location"`
+}
+
+type ItemHistory struct {
+	ID        int    `json:"id"`
+	ItemID    int    `json:"item_id"`
+	Action    string `json:"action"`
+	Quantity  int    `json:"quantity"`
+	Timestamp string `json:"timestamp"`
+	ItemName  string `json:"item_name"`
 }
 
 func (db *DB) GetAllLocationsWithItems() ([]LocationWithItems, error) {
