@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home Inventory</title>
+</head>
+<body>
+    <h1>Home Inventory</h1>
+    <form action="/" method="get">
+        <input type="text" name="search" placeholder="Search items..." value="{{.SearchQuery}}">
+        <button type="submit">Search</button>
+        {{if .IsSearch}}<a href="/">Clear Search</a>{{end}}
+    </form>
+    <br>
+    <a href="/add-location">Add Location</a> | <a href="/export.toml">Export as TOML</a>
+    <br><br>
+    {{if .IsSearch}}
+    <h2>Search Results for "{{.SearchQuery}}"</h2>
+    {{if .SearchResults}}
+    <ul>
+    {{range .SearchResults}}
+        <li>{{.Item.Name}} ({{.Item.Count}}) - <strong>{{.Location.Name}}</strong> <a href="/increase-item/{{.Item.ID}}">+</a> <a href="/decrease-item/{{.Item.ID}}">-</a> <a href="/edit-item/{{.Item.ID}}">Edit</a> <a href="/delete-item/{{.Item.ID}}">Delete</a></li>
+    {{end}}
+    </ul>
+    {{else}}
+    <p>No items found matching "{{.SearchQuery}}".</p>
+    {{end}}
+    {{else}}
+    {{range .LocationsWithItems}}
+    <div>
+        <h2>{{.Location.Name}} <a href="/edit-location/{{.Location.ID}}">Edit</a> <a href="/delete-location/{{.Location.ID}}">Delete</a> <a href="/location-history/{{.Location.ID}}">History</a></h2>
+        <ul>
+        {{range .Items}}
+            <li>{{.Name}} ({{.Count}}) <a href="/increase-item/{{.ID}}">+</a> <a href="/decrease-item/{{.ID}}">-</a> <a href="/edit-item/{{.ID}}">Edit</a> <a href="/delete-item/{{.ID}}">Delete</a></li>
+        {{end}}
+        </ul>
+        <a href="/add-item/{{.Location.ID}}">Add Item to {{.Location.Name}}</a>
+    </div>
+    {{end}}
+    {{end}}
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Item</title>
+</head>
+<body>
+    <h1>Edit Item</h1>
+    <form action="/edit-item/{{.ID}}" method="post">
+        <label for="name">Name:</label>
+        <input type="text" name="name" value="{{.Name}}" required>
+        <label for="count">Count:</label>
+        <input type="number" name="count" value="{{.Count}}" required>
+        <button type="submit">Update</button>
+    </form>
+    <a href="/">Back</a>
+</body>
+</html>

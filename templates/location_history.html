@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>History for {{.Location.Name}}</title>
+</head>
+<body>
+    <h1>History for Location: {{.Location.Name}}</h1>
+    <a href="/">Back to Inventory</a>
+    <br><br>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Count</th>
+                <th>Added Date</th>
+                <th>Removed Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{range .Items}}
+            <tr>
+                <td>{{.Name}}</td>
+                <td>{{.Count}}</td>
+                <td>{{.CreatedAt}}</td>
+                <td>{{if .DeletedAt}}{{.DeletedAt}}{{else}}-{{end}}</td>
+                <td>{{if .DeletedAt}}Removed{{else}}Active{{end}}</td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+</body>
+</html>

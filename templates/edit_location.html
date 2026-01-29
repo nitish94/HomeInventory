@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Location</title>
+</head>
+<body>
+    <h1>Edit Location</h1>
+    <form action="/edit-location/{{.ID}}" method="post">
+        <label for="name">Name:</label>
+        <input type="text" name="name" value="{{.Name}}" required>
+        <button type="submit">Update</button>
+    </form>
+    <a href="/">Back</a>
+</body>
+</html>
