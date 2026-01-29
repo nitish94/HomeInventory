@@ -16,12 +16,12 @@ type Location struct {
 }
 
 type Item struct {
-	ID         int    `json:"id"`
-	Name       string `json:"name"`
-	Count      int    `json:"count"`
-	LocationID int    `json:"location_id"`
-	CreatedAt  string `json:"created_at"`
-	DeletedAt  string `json:"deleted_at"`
+	ID         int            `json:"id"`
+	Name       string         `json:"name"`
+	Count      int            `json:"count"`
+	LocationID int            `json:"location_id"`
+	CreatedAt  sql.NullString `json:"created_at"`
+	DeletedAt  sql.NullString `json:"deleted_at"`
 }
 
 func InitDB(filepath string) (*DB, error) {

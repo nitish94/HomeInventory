@@ -22,9 +22,9 @@
             <tr>
                 <td>{{.Name}}</td>
                 <td>{{.Count}}</td>
-                <td>{{.CreatedAt}}</td>
-                <td>{{if .DeletedAt}}{{.DeletedAt}}{{else}}-{{end}}</td>
-                <td>{{if .DeletedAt}}Removed{{else}}Active{{end}}</td>
+                <td>{{if .CreatedAt.Valid}}{{.CreatedAt.String}}{{else}}-{{end}}</td>
+                <td>{{if .DeletedAt.Valid}}{{.DeletedAt.String}}{{else}}-{{end}}</td>
+                <td>{{if .DeletedAt.Valid}}Removed{{else}}Active{{end}}</td>
             </tr>
         {{end}}
         </tbody>
