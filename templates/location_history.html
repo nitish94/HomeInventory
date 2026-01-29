@@ -32,32 +32,30 @@
                         <thead>
                             <tr>
                                 <th><i class="fas fa-box"></i> Item Name</th>
-                                <th><i class="fas fa-hashtag"></i> Count</th>
-                                <th><i class="fas fa-calendar-plus"></i> Added Date</th>
-                                <th><i class="fas fa-calendar-minus"></i> Removed Date</th>
-                                <th><i class="fas fa-info-circle"></i> Status</th>
+                                <th><i class="fas fa-exchange-alt"></i> Action</th>
+                                <th><i class="fas fa-hashtag"></i> Quantity</th>
+                                <th><i class="fas fa-clock"></i> Timestamp</th>
                             </tr>
                         </thead>
                         <tbody>
-                        {{range .Items}}
+                        {{range .History}}
                             <tr>
-                                <td>{{.Name}}</td>
-                                <td><span class="badge bg-secondary">{{.Count}}</span></td>
-                                <td>{{if .CreatedAt.Valid}}{{.CreatedAt.String}}{{else}}-{{end}}</td>
-                                <td>{{if .DeletedAt.Valid}}{{.DeletedAt.String}}{{else}}-{{end}}</td>
+                                <td>{{.ItemName}}</td>
                                 <td>
-                                    {{if .DeletedAt.Valid}}
-                                        <span class="badge badge-removed"><i class="fas fa-times"></i> Removed</span>
+                                    {{if eq .Action "add"}}
+                                        <span class="badge bg-success"><i class="fas fa-plus"></i> Added</span>
                                     {{else}}
-                                        <span class="badge badge-active"><i class="fas fa-check"></i> Active</span>
+                                        <span class="badge bg-danger"><i class="fas fa-minus"></i> Removed</span>
                                     {{end}}
                                 </td>
+                                <td><span class="badge bg-primary">{{.Quantity}}</span></td>
+                                <td>{{.Timestamp}}</td>
                             </tr>
                         {{end}}
                         </tbody>
                     </table>
                 </div>
-                {{if not .Items}}
+                {{if not .History}}
                 <div class="alert alert-info text-center">
                     <i class="fas fa-info-circle"></i> No history available for this location.
                 </div>

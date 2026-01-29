@@ -139,6 +139,29 @@ func (db *DB) GetAllItemsForLocation(locationID int) ([]Item, error) {
 	return items, nil
 }
 
+func (db *DB) GetItemHistoryForLocation(locationID int) ([]ItemHistory, error) {
+	rows, err := db.Query(`
+		SELECT h.id, h.item_id, h.action, h.quantity, h.timestamp, i.name
+		FROM item_history h
+		JOIN items i ON h.item_id = i.id
+		WHERE i.location_id = ?
+		ORDER BY h.timestamp DESC`, locationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var history []ItemHistory
+	for rows.Next() {
+		var h ItemHistory
+		if err := rows.Scan(&h.ID, &h.ItemID, &h.Action, &h.Quantity, &h.Timestamp, &h.ItemName); err != nil {
+			return nil, err
+		}
+		history = append(history, h)
+	}
+	return history, nil
+}
+
 func (db *DB) GetItem(id int) (*Item, error) {
 	var item Item
 	err := db.QueryRow("SELECT id, name, count, location_id, created_at, deleted_at FROM items WHERE id = ?", id).Scan(&item.ID, &item.Name, &item.Count, &item.LocationID, &item.CreatedAt, &item.DeletedAt)
@@ -201,11 +224,21 @@ func (db *DB) DeleteItem(id int) error {
 
 func (db *DB) IncreaseItemCount(id int) error {
 	_, err := db.Exec("UPDATE items SET count = count + 1 WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+	// Insert history
+	_, err = db.Exec("INSERT INTO item_history (item_id, action, quantity) VALUES (?, 'add', 1)", id)
 	return err
 }
 
 func (db *DB) DecreaseItemCount(id int) error {
 	_, err := db.Exec("UPDATE items SET count = MAX(0, count - 1) WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+	// Insert history
+	_, err = db.Exec("INSERT INTO item_history (item_id, action, quantity) VALUES (?, 'remove', 1)", id)
 	return err
 }
 

@@ -291,17 +291,17 @@ func locationHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	items, err := database.GetAllItemsForLocation(locID)
+	history, err := database.GetItemHistoryForLocation(locID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := struct {
 		Location *db.Location
-		Items    []db.Item
+		History  []db.ItemHistory
 	}{
 		Location: loc,
-		Items:    items,
+		History:  history,
 	}
 	tmpl.ExecuteTemplate(w, "location_history.html", data)
 }
