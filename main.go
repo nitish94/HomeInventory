@@ -42,6 +42,24 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Insert mock data if no locations exist
+	locations, err := database.GetLocations()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(locations) == 0 {
+		// Add mock location and item
+		err = database.AddLocation("Kitchen")
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = database.AddItem("Apples", 5, 1) // Assuming location ID 1
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("Mock data inserted: Kitchen with 5 Apples")
+	}
+
 	tmpl = template.Must(template.ParseGlob("templates/*.html"))
 
 	http.HandleFunc("/", indexHandler)

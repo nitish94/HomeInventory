@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"strings"
 
 	_ "github.com/glebarez/sqlite"
 )
@@ -34,39 +33,26 @@ func InitDB(filepath string) (*DB, error) {
 }
 
 func (db *DB) Migrate() error {
+	// Drop tables if they exist to ensure clean schema
+	_, _ = db.Exec(`DROP TABLE IF EXISTS items`)
+	_, _ = db.Exec(`DROP TABLE IF EXISTS locations`)
+
 	query := `
-	CREATE TABLE IF NOT EXISTS locations (
+	CREATE TABLE locations (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL UNIQUE
 	);
-	CREATE TABLE IF NOT EXISTS items (
+	CREATE TABLE items (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
 		count INTEGER NOT NULL DEFAULT 0,
 		location_id INTEGER NOT NULL,
-		created_at DATETIME,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		deleted_at DATETIME NULL,
 		FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE CASCADE
 	);`
 	_, err := db.Exec(query)
-	if err != nil {
-		return err
-	}
-	// Add columns if not exist (for existing DB)
-	_, err = db.Exec(`ALTER TABLE items ADD COLUMN created_at DATETIME`)
-	if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
-		return err
-	}
-	// Set created_at for existing rows
-	_, err = db.Exec(`UPDATE items SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL`)
-	if err != nil {
-		return err
-	}
-	_, err = db.Exec(`ALTER TABLE items ADD COLUMN deleted_at DATETIME`)
-	if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
-		return err
-	}
-	return nil
+	return err
 }
 
 // Functions for CRUD operations
@@ -169,7 +155,7 @@ func (db *DB) AddItem(name string, count int, locationID int) error {
 		return err
 	} else if err == sql.ErrNoRows {
 		// Not exists, insert new
-		_, err = db.Exec("INSERT INTO items (name, count, location_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)", name, count, locationID)
+		_, err = db.Exec("INSERT INTO items (name, count, location_id) VALUES (?, ?, ?)", name, count, locationID)
 		return err
 	} else {
 		return err
